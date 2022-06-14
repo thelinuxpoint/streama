@@ -1,0 +1,8 @@
+{
+  "name": "streama",
+  "description": "Stream Audio from YouTube",
+  "uuid": "streama@thelinuxpoint.github.io",
+  "shell-version": [
+    "41"
+  ]
+}

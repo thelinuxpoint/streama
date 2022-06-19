@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 8.4666667 8.4666667"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.1 (3bf5ae0, 2021-09-20)"
+   sodipodi:docname="streama.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     units="px"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-center="false"
+     inkscape:zoom="10.723897"
+     inkscape:cx="0.60612293"
+     inkscape:cy="10.443964"
+     inkscape:window-width="1366"
+     inkscape:window-height="707"
+     inkscape:window-x="0"
+     inkscape:window-y="29"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <ellipse
+       style="fill:#1a1a1a;fill-rule:evenodd;stroke:#000000;stroke-width:0.25788"
+       id="path953"
+       cx="4.25102"
+       cy="4.2096105"
+       rx="3.8270004"
+       ry="3.9165957" />
+    <rect
+       style="fill:#ffffff;fill-rule:evenodd;stroke-width:0.107756"
+       id="rect1169-9"
+       width="1.3096689"
+       height="2.7622297"
+       x="4.6626878"
+       y="2.7885058"
+       rx="0"
+       ry="0" />
+    <rect
+       style="fill:#ffffff;fill-rule:evenodd;stroke-width:0.107756"
+       id="rect1169-9-1"
+       width="1.3096689"
+       height="2.7622297"
+       x="2.4973335"
+       y="2.7783644"
+       rx="0"
+       ry="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:2.85195px;line-height:1.25;font-family:System-ui;-inkscape-font-specification:System-ui;fill:#ffffff;stroke-width:0.0712989"
+       x="1.3565131"
+       y="12.123703"
+       id="text3166"
+       transform="matrix(1.463146,-1.1423482,0.33152329,0.42462267,0,0)"><tspan
+         sodipodi:role="line"
+         id="tspan3164"
+         style="fill:#ffffff;stroke-width:0.0712989"
+         x="1.3565131"
+         y="12.123703">)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.85195px;line-height:1.25;font-family:System-ui;-inkscape-font-specification:System-ui;fill:#ff0000;stroke-width:0.0712989"
+       x="-2.2962787"
+       y="0.03736778"
+       id="text3166-3"
+       transform="matrix(-1.3684351,-1.2542491,0.36399828,-0.39713646,0,0)"><tspan
+         sodipodi:role="line"
+         id="tspan3164-6"
+         style="fill:#ff0000;stroke-width:0.0712989"
+         x="-2.2962787"
+         y="0.03736778">)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.85195px;line-height:1.25;font-family:System-ui;-inkscape-font-specification:System-ui;fill:#ffffff;stroke-width:0.0712989"
+       x="0.83572549"
+       y="-9.5842695"
+       id="text3166-7"
+       transform="matrix(-1.3233834,1.3016958,-0.37776788,-0.38406189,0,0)"><tspan
+         sodipodi:role="line"
+         id="tspan3164-5"
+         style="fill:#ffffff;stroke-width:0.0712989"
+         x="0.83572549"
+         y="-9.5842695">)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.85195px;line-height:1.25;font-family:System-ui;-inkscape-font-specification:System-ui;fill:#ff0000;stroke-width:0.0712989"
+       x="4.0231047"
+       y="-1.8828568"
+       id="text3166-35"
+       transform="matrix(1.1091413,1.4884761,-0.43197379,0.32188625,0,0)"
+       inkscape:transform-center-x="0.06548613"
+       inkscape:transform-center-y="0.012512339"><tspan
+         sodipodi:role="line"
+         id="tspan3164-62"
+         style="fill:#ff0000;stroke-width:0.0712989"
+         x="4.0231047"
+         y="-1.8828568">)</tspan></text>
+  </g>
+</svg>

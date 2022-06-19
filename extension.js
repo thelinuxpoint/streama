@@ -12,79 +12,12 @@ const Lang = imports.lang;
 const GLib = imports.gi.GLib;
 const ByteArray = imports.byteArray;
 const Util = imports.misc.util;
-const DBus = Gio.DBusProxy;
+
 const _ = ExtensionUtils.gettext;
 const Shell = imports.gi.Shell;
 
-let icon_path = null;
-let compatible_players = null;
-let support_seek = null;
-let coverpathmusic = null;
-let coverpathpause = null;
-let coverpathplay = null;
-let preferences_path = null;
-let default_setup = "0";
-let music_label = false;
-let cover_overlay = true;
-let notification_option = true;
-let has_gsettings_schema = false;
-let MusicEnabled = null;
-let MusicVolumeOption = null;
-let MusicIndicators = []; 
-let MusicSources = []; 
-let MusicNotifications = []; 
-let MusicVolumePlayers = [];
-let MusicPlayersList = [];
-
-
-
+const { Slider } = imports.ui.slider;
 // THE CODES ############################################
-function ToggleItem() {
-    this._init.apply(this, arguments);
-}
-
-ToggleItem.prototype = {
-    __proto__: PopupMenu.PopupSwitchMenuItem.prototype,
-
-    _init: function(text, icon, active, params) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, params);
-
-        this._holder = new St.BoxLayout();
-        this.addActor(this._holder);
-
-        this._icon = new St.Icon({
-            icon_type: St.IconType.SYMBOLIC,
-            icon_size: 12,
-            icon_name: icon});
-        this._iconbox = new St.Bin();
-        this._iconbox.add_actor(this._icon);
-        this._holder.add_actor(this._iconbox);
-
-        this.label = new St.Label({ text: text, style_class: "label-class" });
-        this._holder.add_actor(this.label);
-        
-        this._switch = new PopupMenu.Switch(active);
-        this.addActor(this._switch.actor, { span: -1, expand: false, align: St.Align.END });
-
-        this.updateIcon();
-    },
-
-    updateIcon: function() {
-        if (this._switch.state) this._iconbox.set_opacity(255);
-        else this._iconbox.set_opacity(100);
-    },
-
-    activate: function () {
-        this.toggle();
-        this.updateIcon();
-    },
-
-    setToggleState: function(state) {
-        this._switch.setToggleState(state);
-        this.updateIcon();
-    }
-}
-
 //########################################################
 class PopupSliderMenuItem extends PopupMenu.PopupBaseMenuItem {
     _init(params) {
@@ -152,6 +85,97 @@ ControlButton.prototype = {
         this.icon.icon_name = icon;
     }
 }
+//#######################################################################
+const MainItem = GObject.registerClass({
+    GTypeName: 'MainItem',
+    GTypeFlags: GObject.TypeFlags.ABSTRACT
+}, class MainItem extends PopupMenu.PopupBaseMenuItem {
+    _init() {
+        super._init();
+        this._ornamentLabel.y_align = Clutter.ActorAlign.CENTER;
+        this._ornamentLabel.y_expand = true;
+        this._signals = [];
+        this.pushSignal(this, 'destroy', this._onDestroy.bind(this));
+    }
+
+    pushSignal(obj, signalName, callback) {
+        let signalId = obj.connect(signalName, callback);
+        this._signals.push({
+            obj: obj,
+            signalId: signalId
+        });
+        return signalId;
+    }
+
+    _onDestroy() {
+        if (this._signals) {
+            this._signals.forEach(signal => signal.obj.disconnect(signal.signalId));
+            this._signals = null;
+        }
+    }
+});
+
+//##################################################################
+const Volume = GObject.registerClass({
+    GTypeName: 'Volume'
+}, class Volume extends MainItem {
+    _init() {
+        super._init();
+        this._mpris = null;
+        this._value = 0.0;
+        this._preMuteValue = 0.0;
+        this._preDragValue = 0.0;
+        this._muted = false;
+        this._icon = new St.Icon({
+            icon_name: 'audio-volume-muted-symbolic',
+            style_class: 'popup-menu-icon',
+        });
+
+        this.add_child(this._icon);
+
+        this._slider = new Slider(0);
+        this._slider.accessible_name = _("Volume");;
+        this._slider.x_expand = true;
+
+        this.add_child(this._slider);
+
+        this.pushSignal(this, 'scroll-event', (actor, event) => {
+            return this._slider._onScrollEvent(actor, event);
+        });
+
+        this.pushSignal(this, 'touch-event', (actor, event) => {
+            return this._slider._touchDragging(actor, event);
+        });
+
+        this.pushSignal(this, 'button-press-event', (actor, event) => {
+            if (event.get_button() === Clutter.BUTTON_SECONDARY) {
+                this.toggleMute();
+            }
+            return this._slider.startDragging(event);
+        });
+
+        this.pushSignal(this, 'key-press-event', (actor, event) => {
+            return this._slider.onKeyPressEvent(actor, event);
+        });
+
+        this._sliderChangedId = this.pushSignal(this._slider, 'notify::value', () => {
+            this.value = this._sliderValue;
+        });
+
+        this.pushSignal(this._slider, 'drag-begin', () => {
+            this._preDragValue = this.value;
+        });
+
+        this.pushSignal(this._slider, 'drag-end', () => {
+            this.remove_style_pseudo_class('active');
+            if (this._preDragValue && !this.value) {
+                this._preMuteValue = this._preDragValue;
+                this._muted = true;
+            }
+        });
+    }
+});
+
 
 // S ###########################
 // MUSIC INT BOX ######################################
@@ -161,92 +185,73 @@ function MusicIntBox() {
 }
 
 MusicIntBox.prototype = {
-    _init: function (owner, coversize, buttonsize, overlay, openbutton, styleprefix) {  
 
+    _init: function (top) {  
 
-        this._appsys = Shell.AppSystem.get_default();
-        this._appobj = this._appsys.lookup_app(this._name + ".desktop");
-        this._playerstate = true;
+        this._holder = new St.BoxLayout({ 
+            y_expand: false,
+            x_expand: true,
+            vertical:true,
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align:  Clutter.ActorAlign.END
+        });
 
-        //Actor that holds everything
-        this._holder = new St.BoxLayout({style_class: styleprefix + 'mib-track-box'});
-        this.actor = new St.Bin({style_class: styleprefix + 'mib-track-actor-holder', x_align: St.Align.MIDDLE})
-        this.actor.set_child(this._holder);
+        this._controls = new St.BoxLayout({vertical:false,});
+                
+        this._volume = new Volume();
 
-        //Track CoverArt
-        // this._trackCoverArt = new CoverArt(owner, coversize, overlay, styleprefix);
-        //Holders
-        this._trackInfoHolder = new St.Bin({style_class: styleprefix + 'mib-track-info-holder', y_align: St.Align.MIDDLE});
-        this._trackControlHolder = new St.Bin({style_class: styleprefix + 'mib-track-control-holder', x_align: St.Align.MIDDLE});
-        // this._holder.add_actor(this._trackCoverArt.getActor());
-        this._holder.add_actor(this._trackInfoHolder);
-
-        //Track Information
-        this._infos = new St.BoxLayout({vertical: true, style_class: styleprefix + 'mib-track-info'});
-        this._title = new St.Label({text: "NIL", style_class: 'mib-track-title'});
-        this._infos.add_actor(this._title);
-        this._artist = new St.Label({text: _('Artist')});
-        this._infos.add_actor(this._artist);
-        this._album = new St.Label({text: _('Album')});
-        this._infos.add_actor(this._album);
-        this._infos.add_actor(this._trackControlHolder);
-        this._trackInfoHolder.set_child(this._infos);
-
-        //Buttons
-        this._raiseButton = new ControlButton('media-eject', Math.floor(buttonsize * 0.9),
+        this._stopButton = new ControlButton('media-playback-stop-symbolic', 20,
             Lang.bind(this, function () { 
-                Main.overview.hide();
-                // this._mediaServer.RaiseRemote(); 
-                Mainloop.timeout_add(100, Lang.bind(this, function () {
-                    windowm = this._appobj.get_windows()[0];
-                    Main.activateWindow(windowm);
-                }));
-            })
-        );
-
-        this._spaceButton = new St.Bin({style_class: 'spaceb'});
-        
-        this._prevButton = new ControlButton('media-skip-backward', buttonsize,
+        }));
+        this._prevButton = new ControlButton('media-skip-backward', 20,
             Lang.bind(this, function () { 
         }));
         
-        this._playButton = new ControlButton('media-playback-start', buttonsize,
+        this._playButton = new ControlButton('media-playback-start',20,
             Lang.bind(this, function () { 
         }));
         
-        this._nextButton = new ControlButton('media-skip-forward', buttonsize,
+        this._nextButton = new ControlButton('media-skip-forward', 20,
             Lang.bind(this, function () { 
-        }));
 
+        }));
+        this._folderButton = new ControlButton('system-file-manager-symbolic', 20,
+            Lang.bind(this, function () { 
+            Main.notify(_('No Folder Selected'));
+
+
+        }));
         this._spaceButtonTwo = new St.Bin({style_class: 'spaceb'});
 
-        this._settButton = new ControlButton('system-run', Math.floor(buttonsize * 0.8),
+        this._settButton = new ControlButton('window-close-symbolic', Math.floor(20 * 0.8),
             Lang.bind(this, function () { 
-            }));
+                top.vbox_sdel.remove_actor(top.vbox_del);
+                top.vbox_del = new St.BoxLayout({
+                    vertical: true,
+                    style_class: "datemenu-displays-box",
+                    style: "border:10px;"
+                });
 
-        this.controls = new St.BoxLayout();
+                top.vbox_sdel.add_actor(top.vbox_del);
+            })
+        );
+        
+        this._controls.add_actor(this._stopButton.getActor());
 
-        if (openbutton == "raise") {
-            this.controls.add_actor(this._raiseButton.getActor());
-            this.controls.add_actor(this._spaceButton);
-        }
+        this._controls.add_actor(this._prevButton.getActor());
+        this._controls.add_actor(this._playButton.getActor());
+        this._controls.add_actor(this._nextButton.getActor());
+        this._controls.add_actor(this._folderButton.getActor());
 
-        this.controls.add_actor(this._prevButton.getActor());
-        this.controls.add_actor(this._playButton.getActor());
-        this.controls.add_actor(this._nextButton.getActor());
-
-        if (openbutton == "preferences" && has_gsettings_schema) {
-            this.controls.add_actor(this._spaceButtonTwo);
-            this.controls.add_actor(this._settButton.getActor());
-        }
-
-        this._trackControlHolder.set_child(this.controls);
-
+        this._controls.add_actor(this._settButton.getActor());
        
+        this._holder.add(this._controls);
+        this._holder.add(this._volume);
+        
     },
 
     getActor: function() {
-        return this.actor;
+        return this._holder;
     },
     
 }
@@ -318,12 +323,13 @@ const Indicator = GObject.registerClass(
 
             // The Control Box ##########################################
 
-            this._cbox = new St.BoxLayout();
+            this._cbox = new St.BoxLayout({y_align: Clutter.ActorAlign.END});
 
-            this._mainMusicBox = new MusicIntBox("", 120, 26, true, "raise", "");
+            this._mainMusicBox = new MusicIntBox(this);
 
             // END OF CONTROL BOX ########################################
-            this._cbox.add(this._mainMusicBox.getActor());
+            this.vbox.add(this._mainMusicBox.getActor());
+            
             this.vbox.add(this._cbox);
 
             this._inputF.clutter_text.connect('activate', async (actor) => {
@@ -342,7 +348,6 @@ const Indicator = GObject.registerClass(
                 let [, stdout, stderr, status] = GLib.spawn_command_line_sync(`/usr/local/bin/node .local/share/gnome-shell/extensions/streama@thelinuxpoint.github.io/search.js '${actor.text}'`);
                 
                 try{
-
                     if (status !== 0) {
                         if (stderr instanceof Uint8Array){
                             stderr = ByteArray.toString(stderr);
@@ -356,11 +361,8 @@ const Indicator = GObject.registerClass(
 
                     logError(e);
                 }
-                
                 var json = JSON.stringify(eval("(" + stdout + ")"));
-
                 let map = JSON.parse(json);
-
                 for (let i of map.videos ){
                     let menuPref = new PopupMenu.PopupMenuItem(i.title.toString());
                     menuPref.connect('activate', () => {                        
@@ -368,11 +370,9 @@ const Indicator = GObject.registerClass(
                     });
                     this.vbox_del.add(menuPref);
                 }
-
             });
 
             this.menu.box.add(this.scrollbox);
-
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem(), 2);
 

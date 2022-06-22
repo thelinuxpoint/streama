@@ -9,6 +9,9 @@
    id="svg5"
    inkscape:version="1.1.1 (3bf5ae0, 2021-09-20)"
    sodipodi:docname="streama.svg"
+   inkscape:export-filename="/home/prakash/streama.png"
+   inkscape:export-xdpi="200"
+   inkscape:export-ydpi="200"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -27,8 +30,8 @@
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="false"
      inkscape:zoom="10.723897"
-     inkscape:cx="0.60612293"
-     inkscape:cy="10.443964"
+     inkscape:cx="0.69937263"
+     inkscape:cy="10.443965"
      inkscape:window-width="1366"
      inkscape:window-height="707"
      inkscape:window-x="0"
@@ -41,13 +44,6 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <ellipse
-       style="fill:#1a1a1a;fill-rule:evenodd;stroke:#000000;stroke-width:0.25788"
-       id="path953"
-       cx="4.25102"
-       cy="4.2096105"
-       rx="3.8270004"
-       ry="3.9165957" />
     <rect
        style="fill:#ffffff;fill-rule:evenodd;stroke-width:0.107756"
        id="rect1169-9"
